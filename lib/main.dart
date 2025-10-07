@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -11,7 +13,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Spooky Halloween Game',
-      theme: ThemeData.dark(),
+      theme: ThemeData.dark().copyWith(
+      ),
       home: WelcomePage(),
       debugShowCheckedModeBanner: false,
     );
@@ -278,28 +281,33 @@ class _HalloweenGameState extends State<HalloweenGame>
     )..repeat(reverse: true);
   }
   
-  // Method to play background music
+  // Method to play background music (format-safe for Flutter Web)
   void _playBackgroundMusic() async {
     try {
+      // Try WAV first (Flutter Web prefers WAV/OGG)
       await _backgroundMusic.play(
-        AssetSource('sounds/spooky_background.mp3'),
-        volume: 0.3, // Lower volume for background music
+        AssetSource('sounds/background.wav'),
+        volume: 0.3,
       );
-      _backgroundMusic.setReleaseMode(ReleaseMode.loop); // Loop the music
+      await _backgroundMusic.setReleaseMode(ReleaseMode.loop);
     } catch (e) {
-      print('Error playing background music: $e');
+      // Fallback: try OGG or log error
+      print('Error playing background music (wav): $e');
+      // Optionally try another format here if available
     }
   }
-  
-  // Method to play sound effects
+
+  // Method to play sound effects (format-safe for Flutter Web)
   void _playSoundEffect(String soundFile) async {
     try {
+      // Only allow .wav files for web
       await _soundEffects.play(
         AssetSource('sounds/$soundFile'),
         volume: 0.7,
       );
     } catch (e) {
-      print('Error playing sound effect: $e');
+      print('Error playing sound effect ($soundFile): $e');
+      // Optionally try another format here if available
     }
   }
   
@@ -327,11 +335,11 @@ class _HalloweenGameState extends State<HalloweenGame>
         gameWon = true;
         score = max(0, 100 - (attempts - 1) * 10); // Score decreases with more attempts
         message = "🎉 YOU FOUND IT! 🎉";
-        _playSoundEffect('success.mp3'); // Play success sound
+        _playSoundEffect('win.wav'); // Play success sound
         _showSuccessDialog();
       } else {
         message = "BOO! Wrong item! Try again! 👻";
-        _playSoundEffect('scary.mp3'); // Play jump scare sound
+        _playSoundEffect('fail.wav'); // Play jump scare sound
         Timer(Duration(seconds: 1), () {
           if (mounted) {
             setState(() {
