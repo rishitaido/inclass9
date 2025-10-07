@@ -219,3 +219,369 @@ class _WelcomePageState extends State<WelcomePage>
     );
   }
 }
+
+// GAME PAGE
+class HalloweenGame extends StatefulWidget {
+  @override
+  _HalloweenGameState createState() => _HalloweenGameState();
+}
+
+class _HalloweenGameState extends State<HalloweenGame>
+    with TickerProviderStateMixin {
+  bool gameWon = false;
+  String message = "Find the Magic Pumpkin! 🎃";
+  int score = 0;
+  int attempts = 0;
+  
+  // Audio players
+  final AudioPlayer _backgroundMusic = AudioPlayer();
+  final AudioPlayer _soundEffects = AudioPlayer();
+  
+  // Animation controllers for each item
+  late AnimationController _pumpkinController;
+  late AnimationController _ghostController;
+  late AnimationController _batController;
+  late AnimationController _spiderController;
+  late AnimationController _skullController;
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    // Start background music
+    _playBackgroundMusic();
+    
+    // Initialize animation controllers with different durations for variety
+    _pumpkinController = AnimationController(
+      duration: Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _ghostController = AnimationController(
+      duration: Duration(seconds: 4),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _batController = AnimationController(
+      duration: Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _spiderController = AnimationController(
+      duration: Duration(seconds: 5),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _skullController = AnimationController(
+      duration: Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+  }
+  
+  // Method to play background music
+  void _playBackgroundMusic() async {
+    try {
+      await _backgroundMusic.play(
+        AssetSource('sounds/spooky_background.mp3'),
+        volume: 0.3, // Lower volume for background music
+      );
+      _backgroundMusic.setReleaseMode(ReleaseMode.loop); // Loop the music
+    } catch (e) {
+      print('Error playing background music: $e');
+    }
+  }
+  
+  // Method to play sound effects
+  void _playSoundEffect(String soundFile) async {
+    try {
+      await _soundEffects.play(
+        AssetSource('sounds/$soundFile'),
+        volume: 0.7,
+      );
+    } catch (e) {
+      print('Error playing sound effect: $e');
+    }
+  }
+  
+  @override
+  void dispose() {
+    // Stop and dispose audio players
+    _backgroundMusic.stop();
+    _backgroundMusic.dispose();
+    _soundEffects.stop();
+    _soundEffects.dispose();
+    
+    // Dispose animation controllers
+    _pumpkinController.dispose();
+    _ghostController.dispose();
+    _batController.dispose();
+    _spiderController.dispose();
+    _skullController.dispose();
+    super.dispose();
+  }
+  
+  void _handleTap(String item) {
+    setState(() {
+      attempts++;
+      if (item == 'pumpkin') {
+        gameWon = true;
+        score = max(0, 100 - (attempts - 1) * 10); // Score decreases with more attempts
+        message = "🎉 YOU FOUND IT! 🎉";
+        _playSoundEffect('success.mp3'); // Play success sound
+        _showSuccessDialog();
+      } else {
+        message = "BOO! Wrong item! Try again! 👻";
+        _playSoundEffect('scary.mp3'); // Play jump scare sound
+        Timer(Duration(seconds: 1), () {
+          if (mounted) {
+            setState(() {
+              message = "Find the Magic Pumpkin! 🎃";
+            });
+          }
+        });
+      }
+    });
+  }
+  
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.orange,
+          title: Column(
+            children: [
+              Text('🎃 WINNER! 🎃', 
+                style: TextStyle(color: Colors.white, fontSize: 24),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              Text('Score: $score/100', 
+                style: TextStyle(color: Colors.white, fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          content: Text('You found it in $attempts ${attempts == 1 ? "try" : "tries"}!',
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            TextButton(
+              child: Text('Play Again', style: TextStyle(color: Colors.white)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _resetGame();
+              },
+            ),
+            TextButton(
+              child: Text('Main Menu', style: TextStyle(color: Colors.white)),
+              onPressed: () {
+                _backgroundMusic.stop(); // Stop music when returning to menu
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Go back to welcome page
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
+  void _resetGame() {
+    setState(() {
+      gameWon = false;
+      message = "Find the Magic Pumpkin! 🎃";
+      score = 0;
+      attempts = 0;
+    });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFF1a0033),
+      body: Stack(
+        children: [
+          // Background decoration
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF1a0033),
+                  Color(0xFF330066),
+                ],
+              ),
+            ),
+          ),
+          
+          // Back button
+          Positioned(
+            top: 40,
+            left: 10,
+            child: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white, size: 30),
+              onPressed: () {
+                _backgroundMusic.stop(); // Stop music when leaving
+                Navigator.pop(context);
+              },
+            ),
+          ),
+          
+          // Game title and message
+          Positioned(
+            top: 50,
+            left: 0,
+            right: 0,
+            child: Column(
+              children: [
+                Text(
+                  'SPOOKY HALLOWEEN HUNT',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                    shadows: [
+                      Shadow(blurRadius: 10, color: Colors.black, offset: Offset(2, 2)),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(blurRadius: 5, color: Colors.black),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Attempts: $attempts',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[300],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Magic Pumpkin (Correct Item) - with glow effect
+          AnimatedBuilder(
+            animation: _pumpkinController,
+            builder: (context, child) {
+              return Positioned(
+                top: 170 + (_pumpkinController.value * 100),
+                left: 50 + (_pumpkinController.value * 200),
+                child: GestureDetector(
+                  onTap: () => _handleTap('pumpkin'),
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withOpacity(0.6),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Text('🎃', style: TextStyle(fontSize: 60)),
+                  ),
+                ),
+              );
+            },
+          ),
+          
+          // Ghost (Trap Item)
+          AnimatedBuilder(
+            animation: _ghostController,
+            builder: (context, child) {
+              return Positioned(
+                top: 220 + (_ghostController.value * 150),
+                right: 30 + (_ghostController.value * 100),
+                child: GestureDetector(
+                  onTap: () => _handleTap('ghost'),
+                  child: Text('👻', style: TextStyle(fontSize: 60)),
+                ),
+              );
+            },
+          ),
+          
+          // Bat (Trap Item)
+          AnimatedBuilder(
+            animation: _batController,
+            builder: (context, child) {
+              return Positioned(
+                top: 320 + (sin(_batController.value * 2 * pi) * 50),
+                left: 150 + (cos(_batController.value * 2 * pi) * 100),
+                child: GestureDetector(
+                  onTap: () => _handleTap('bat'),
+                  child: Text('🦇', style: TextStyle(fontSize: 50)),
+                ),
+              );
+            },
+          ),
+          
+          // Spider (Trap Item)
+          AnimatedBuilder(
+            animation: _spiderController,
+            builder: (context, child) {
+              return Positioned(
+                bottom: 150 + (_spiderController.value * 100),
+                right: 80 + (_spiderController.value * 150),
+                child: GestureDetector(
+                  onTap: () => _handleTap('spider'),
+                  child: Text('🕷️', style: TextStyle(fontSize: 55)),
+                ),
+              );
+            },
+          ),
+          
+          // Skull (Trap Item)
+          AnimatedBuilder(
+            animation: _skullController,
+            builder: (context, child) {
+              return Positioned(
+                bottom: 250 + (_skullController.value * 80),
+                left: 100 + (_skullController.value * 120),
+                child: GestureDetector(
+                  onTap: () => _handleTap('skull'),
+                  child: Text('💀', style: TextStyle(fontSize: 50)),
+                ),
+              );
+            },
+          ),
+          
+          // Add some decorative elements
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 100,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black,
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
