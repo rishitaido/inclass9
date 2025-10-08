@@ -121,7 +121,7 @@ class _WelcomePageState extends State<WelcomePage>
                   child: Column(
                     children: [
                       Text(
-                        ' Find the Magic Emoji ',
+                        ' Find the Magic Emoji! 🎃',
                         style: TextStyle(
                           fontSize: 22,
                           color: Colors.white,
@@ -231,7 +231,7 @@ class HalloweenGame extends StatefulWidget {
 class _HalloweenGameState extends State<HalloweenGame>
     with TickerProviderStateMixin {
   bool gameWon = false;
-  String message = "Find the Magic Pumpkin! 🎃";
+  String message = "Find the Magic Emoji! 🎃";
   int score = 0;
   int attempts = 0;
   
@@ -337,7 +337,7 @@ class _HalloweenGameState extends State<HalloweenGame>
         Timer(Duration(seconds: 1), () {
           if (mounted) {
             setState(() {
-              message = "Find the Magic Pumpkin! 🎃";
+              message = "Find the Magic Emoji! 🎃";
             });
           }
         });
@@ -394,7 +394,7 @@ class _HalloweenGameState extends State<HalloweenGame>
   void _resetGame() {
     setState(() {
       gameWon = false;
-      message = "Find the Magic Pumpkin! 🎃";
+      message = "Find the Magic Emoji! 🎃";
       score = 0;
       attempts = 0;
     });
