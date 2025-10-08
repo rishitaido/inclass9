@@ -13,8 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Spooky Halloween Game',
-      theme: ThemeData.dark().copyWith(
-      ),
+      theme: ThemeData.dark(),
       home: WelcomePage(),
       debugShowCheckedModeBanner: false,
     );
@@ -122,7 +121,7 @@ class _WelcomePageState extends State<WelcomePage>
                   child: Column(
                     children: [
                       Text(
-                        '🎃 Find the Magic Pumpkin 🎃',
+                        ' Find the Magic Emoji ',
                         style: TextStyle(
                           fontSize: 22,
                           color: Colors.white,
@@ -132,7 +131,7 @@ class _WelcomePageState extends State<WelcomePage>
                       ),
                       SizedBox(height: 20),
                       Text(
-                        'Tap the glowing pumpkin to win!\nBut beware of the spooky traps...',
+                        'Tap the floating emojis to win!\nBut beware of the spooky traps...',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey[300],
@@ -281,33 +280,28 @@ class _HalloweenGameState extends State<HalloweenGame>
     )..repeat(reverse: true);
   }
   
-  // Method to play background music (format-safe for Flutter Web)
+  // Method to play background music
   void _playBackgroundMusic() async {
     try {
-      // Try WAV first (Flutter Web prefers WAV/OGG)
       await _backgroundMusic.play(
         AssetSource('sounds/background.wav'),
         volume: 0.3,
       );
       await _backgroundMusic.setReleaseMode(ReleaseMode.loop);
     } catch (e) {
-      // Fallback: try OGG or log error
-      print('Error playing background music (wav): $e');
-      // Optionally try another format here if available
+      print('Error playing background music: $e');
     }
   }
-
-  // Method to play sound effects (format-safe for Flutter Web)
+  
+  // Method to play sound effects
   void _playSoundEffect(String soundFile) async {
     try {
-      // Only allow .wav files for web
       await _soundEffects.play(
         AssetSource('sounds/$soundFile'),
         volume: 0.7,
       );
     } catch (e) {
-      print('Error playing sound effect ($soundFile): $e');
-      // Optionally try another format here if available
+      print('Error playing sound effect: $e');
     }
   }
   
@@ -509,6 +503,61 @@ class _HalloweenGameState extends State<HalloweenGame>
             },
           ),
           
+          AnimatedBuilder(
+            animation: _pumpkinController,
+            builder: (context, child) {
+              return Positioned(
+                bottom: 250 + (_pumpkinController.value * 60),
+                left: 90 + (_pumpkinController.value * 180),
+                child: GestureDetector(
+                  onTap: () => _handleTap('fake_pumpkin'),
+                  child: Container(
+                    width: 65,
+                    height: 65,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.deepOrange.withOpacity(0.4),
+                          blurRadius: 16,
+                          spreadRadius: 7,
+                        ),
+                      ],
+                    ),
+                    child: Text('🎃', style: TextStyle(fontSize: 45)),
+                  ),
+                ),
+              );
+            },
+          ),
+          AnimatedBuilder(
+            animation: _pumpkinController,
+            builder: (context, child) {
+              return Positioned(
+                top: 200 + (_pumpkinController.value * 110),
+                right: 220 + (_pumpkinController.value * 80),
+                child: GestureDetector(
+                  onTap: () => _handleTap('trap'),
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.yellow.withOpacity(0.3),
+                          blurRadius: 14,
+                          spreadRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Text('🎃', style: TextStyle(fontSize: 40)),
+                  ),
+                ),
+              );
+            },
+          ),
+          
           // Ghost (Trap Item)
           AnimatedBuilder(
             animation: _ghostController,
@@ -519,6 +568,31 @@ class _HalloweenGameState extends State<HalloweenGame>
                 child: GestureDetector(
                   onTap: () => _handleTap('ghost'),
                   child: Text('👻', style: TextStyle(fontSize: 60)),
+                ),
+              );
+            },
+          ),
+          // Duplicate Ghost (purple glow, slightly shifted)
+          AnimatedBuilder(
+            animation: _ghostController,
+            builder: (context, child) {
+              return Positioned(
+                top: 250 + (_ghostController.value * 120),
+                right: 70 + (_ghostController.value * 80),
+                child: Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purpleAccent.withOpacity(0.5),
+                        blurRadius: 20,
+                        spreadRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Text('👻', style: TextStyle(fontSize: 40)),
                 ),
               );
             },
@@ -538,6 +612,31 @@ class _HalloweenGameState extends State<HalloweenGame>
               );
             },
           ),
+          // Duplicate Bat (green glow, slightly shifted)
+          AnimatedBuilder(
+            animation: _batController,
+            builder: (context, child) {
+              return Positioned(
+                top: 350 + (sin(_batController.value * 2 * pi) * 30),
+                left: 190 + (cos(_batController.value * 2 * pi) * 80),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.greenAccent.withOpacity(0.5),
+                        blurRadius: 15,
+                        spreadRadius: 7,
+                      ),
+                    ],
+                  ),
+                  child: Text('🦇', style: TextStyle(fontSize: 30)),
+                ),
+              );
+            },
+          ),
           
           // Spider (Trap Item)
           AnimatedBuilder(
@@ -553,6 +652,31 @@ class _HalloweenGameState extends State<HalloweenGame>
               );
             },
           ),
+          // Duplicate Spider (blue glow, slightly shifted)
+          AnimatedBuilder(
+            animation: _spiderController,
+            builder: (context, child) {
+              return Positioned(
+                bottom: 120 + (_spiderController.value * 80),
+                right: 130 + (_spiderController.value * 120),
+                child: Container(
+                  width: 39,
+                  height: 39,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blueAccent.withOpacity(0.45),
+                        blurRadius: 13,
+                        spreadRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Text('🕷️', style: TextStyle(fontSize: 27)),
+                ),
+              );
+            },
+          ),
           
           // Skull (Trap Item)
           AnimatedBuilder(
@@ -564,6 +688,31 @@ class _HalloweenGameState extends State<HalloweenGame>
                 child: GestureDetector(
                   onTap: () => _handleTap('skull'),
                   child: Text('💀', style: TextStyle(fontSize: 50)),
+                ),
+              );
+            },
+          ),
+          // Duplicate Skull (red glow, slightly shifted)
+          AnimatedBuilder(
+            animation: _skullController,
+            builder: (context, child) {
+              return Positioned(
+                bottom: 290 + (_skullController.value * 60),
+                right: 140 + (_skullController.value * 100),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.redAccent.withOpacity(0.5),
+                        blurRadius: 12,
+                        spreadRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Text('💀', style: TextStyle(fontSize: 24)),
                 ),
               );
             },
